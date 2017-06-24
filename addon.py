@@ -74,8 +74,8 @@ def index():
         litems.append(itemtagbrowse)
         litems.append(itemtagged)
         litems.append(itemsearch)
-    except Exception, e:
-        plugin.notify(msg=e.message, delay=10000)
+    except:
+        plugin.notify(msg="Error", delay=10000)
     if not APIOK:
         itemappkey = {
             'label': "Consumer KEY:\n{0}".format(TUMBLRAUTH['consumer_key']),
@@ -154,16 +154,11 @@ def liked(offset=0):
             b.update(item)
             lbl = ""
             lbl2 = ""
-            img = __imgtumblr__
+            img = item.get('thumbnail_url', item.get('image_permalink', item.get('image_permalink', "")))
             alltags.extend(item.get('tags', []))
-            if 'thumb' in str(item.keys()[:]):
-                if item.get('thumbnail_url', '') is not None:
-                    img = item.get('thumbnail_url', '')  # .replace('https', 'http') #item.get('thumbnail_url','')
-            elif 'image' in str(item.keys()[:]):
-                if item.get('image_permalink', ""):
-                    img = item.get('image_permalink', "")
+            if img == '':
+                img = __imgtumblr__
             try:
-                plugin.log.debug(msg=item.get('thumbnail_url', ''))
                 if len(b.get('slug', '')) > 0:
                     lbl = b.get('slug', '')
                 elif len(b.get('title', '')) > 0:
@@ -321,7 +316,7 @@ def dashboard(lastid=0, offset=0):
     likes = {}
     listlikes = []
     litems = []
-    strpage = str(((int(offset) + 20) / 20))
+    strpage = str(((int(offset) + 40) / 40))
     # results = tclient.dashboard(offset=offset, limit=100)
     lastid = plugin.get_setting('lastid', int)
     if lastid == 0:
@@ -329,7 +324,7 @@ def dashboard(lastid=0, offset=0):
     if lastid is None or lastid < 1000000:
         lastid = 10000000000
     results = tclient.dashboard(limit=20, offset=offset, type='video', since_id=lastid)
-    nextitem = ListItem(label="Next Page -> #{0}".format(int(strpage)+1), label2="Liked Videos", icon=__imgnext__, thumbnail=__imgnext__, path=plugin.url_for(dashboard, offset=int(20+int(offset)), lastid=lastid))
+    nextitem = ListItem(label="Next Page -> #{0}".format(int(strpage)+1), label2="Liked Videos", icon=__imgnext__, thumbnail=__imgnext__, path=plugin.url_for(dashboard, offset=int(40+int(offset)), lastid=lastid))
     nextitem.set_art({'poster': __imgnext__, 'thumbnail': __imgnext__, 'fanart': __imgnext__})
     nextitem.is_folder = True
     # litems = [nextitem]
@@ -351,14 +346,9 @@ def dashboard(lastid=0, offset=0):
     for item in listlikes:
         if item.get('type', '') == 'video':
             b = item
-            img = __imgtumblr__
+            img = item.get("thumbnail_url", __imgtumblr__)
+            img2 = item.get("image_permalink", __imgtumblr__)
             alltags.extend(item.get('tags', []))
-            if 'thumb' in str(item.keys()[:]):
-                if item.get('thumbnail_url', '') is not None:
-                    img = item.get('thumbnail_url', '')  # .replace('https', 'http') #item.get('thumbnail_url','')
-            elif 'image' in str(item.keys()[:]):
-                if item.get('image_permalink', ""):
-                    img = item.get('image_permalink', "")
             try:
                 if len(b.get('slug', '')) > 0:
                     lbl = b.get('slug', '')
@@ -380,21 +370,22 @@ def dashboard(lastid=0, offset=0):
             except:
                 lbl = b.get('blog_name', '')
                 lbl2 = b.get('short_url', '')
-            img = item.get('thumbnail_url', '')
             vidurl = item.get('video_url', '')
+            img = item.get('thumbnail_url', item.get('image_permalink', item.get('image_permalink', __imgtumblr__))).replace('https:','http:')
+            img2 = item.get('image_permalink', item.get('thumbnail_url', item.get('thumbnail_url',   __imgtumblr__))).replace('https:','http:')
             if vidurl is not None and len(vidurl) > 10:
                 if len(b.get('caption', '')) > 0:
                     lbl = Strip(b.get('caption', ''))
-                litem = ListItem(label=lbl, label2=lbl2, icon=img, thumbnail=img, path=vidurl)
+                litem = ListItem(label=lbl, label2=lbl2, icon=img2, thumbnail=img, path=vidurl)
                 litem.playable = True
                 litem.is_folder = False
                 if item.get('date', '') is not None:
                     rdate = str(item.get('date', '')).split(' ', 1)[0].strip()
                 litem.set_info(info_type='video', info_labels={'Date': rdate})
-                litem.set_art({'poster': img, 'thumbnail': img, 'fanart': img})
+                litem.set_art({'poster': img2, 'thumbnail': img, 'fanart': img2})
                 pathdl = plugin.url_for(endpoint=download, urlvideo=vidurl)
                 pathaddlike = plugin.url_for(endpoint=addlike, id=item.get('id', ''))
-                litem.add_context_menu_items([('Download', 'RunPlugin({0})'.format(pathdl)), ('Like', 'RunPlugin({0})'.format(pathaddlike)),])
+                litem.add_context_menu_items([('Download', 'RunPlugin({0})'.format(pathdl)), ('Like', 'RunPlugin({0})'.format(pathaddlike)),('Show Image', 'ShowPicture({0})'.format(img)),])
                 litems.append(litem)
     item = listlikes[-1]
     plugin.set_setting('lastid', str(item.get('id', lastid)))
@@ -534,7 +525,8 @@ def blogposts(blogname, offset=0):
         for post in results:
             lbl2 = post.get('blog_name', '')
             lbl = post.get('slug', '').replace('-', ' ')
-            img = post.get('thumbnail_url', __imgtumblr__)
+            img = post.get('thumbnail_url', post.get('image_permalink', __imgtumblr__))
+            img2 = post.get('image_permalink', post.get('thumbnail_url', __imgtumblr__))
             alltags.extend(post.get('tags', []))
             try:
                 if post.get('slug', '') is not None:
@@ -547,19 +539,17 @@ def blogposts(blogname, offset=0):
                     lbl = post.get('source_title', '')
                 else:
                     lbl = post.get('short_url', '')
-                if post.get('thumbnail_url', ''):
-                    img = post.get('thumbnail_url', '')
                 if post.get('video_url', '') is not None:
                     vidurl = post.get('video_url', '')
             except:
                 plugin.notify(str(repr(post)))
-            litem = ListItem(label=lbl, label2=lbl2, icon=img, thumbnail=img, path=vidurl)
+            litem = ListItem(label=lbl, label2=lbl2, icon=img2, thumbnail=img, path=vidurl)
             litem.playable = True
             litem.is_folder = False
             if len(post.get('date', '')) > 0:
                 rdate = str(post.get('date', '')).split(' ', 1)[0].strip()
             litem.set_info(info_type='video', info_labels={'Date': rdate, 'Duration': post.get('duration', '')})
-            litem.set_art({'poster': img, 'thumbnail': img, 'fanart': img})
+            litem.set_art({'poster': img2, 'thumbnail': img, 'fanart': img2})
             pathdl = plugin.url_for(endpoint=download, urlvideo=vidurl)
             pathaddlike = plugin.url_for(endpoint=addlike, id=post.get('id',''))
             litem.add_context_menu_items([('Download', 'RunPlugin({0})'.format(pathdl)), ('Like', 'RunPlugin({0})'.format(pathaddlike)), ])
@@ -624,7 +614,8 @@ def search():
     for post in listmatch:
         lbl2 = post.get('blog_name', '')
         lbl = post.get('slug', '').replace('-', ' ')
-        img = post.get('thumbnail_url', __imgtumblr__)
+        img = post.get('thumbnail_url', post.get('image_permalink',__imgtumblr__))
+        img2 = post.get('image_permalink', post.get('thumbnail_url', __imgtumblr__))
         alltags.extend(post.get('tags', []))
         try:
             if post.get('slug', '') is not None:
@@ -637,19 +628,17 @@ def search():
                 lbl = post.get('source_title', '')
             else:
                 lbl = post.get('short_url', '')
-            if post.get('thumbnail_url', ''):
-                img = post.get('thumbnail_url', '')
             if post.get('video_url', '') is not None:
                 vidurl = post.get('video_url', '')
         except:
             plugin.notify(str(repr(post)))
-        litem = ListItem(label=lbl, label2=lbl2, icon=img, thumbnail=img, path=vidurl)
+        litem = ListItem(label=lbl, label2=lbl2, icon=img2, thumbnail=img, path=vidurl)
         litem.playable = True
         litem.is_folder = False
         if len(post.get('date', '')) > 0:
             rdate = str(post.get('date', '')).split(' ', 1)[0].strip()
         litem.set_info(info_type='video', info_labels={'Date': rdate, 'Duration': post.get('duration', '')})
-        litem.set_art({'poster': img, 'thumbnail': img, 'fanart': img})
+        litem.set_art({'poster': img2, 'thumbnail': img, 'fanart': img2})
         pathdl = plugin.url_for(endpoint=download, urlvideo=vidurl)
         pathaddlike = plugin.url_for(endpoint=addlike, id=post.get('id', ''))
         litem.add_context_menu_items(
