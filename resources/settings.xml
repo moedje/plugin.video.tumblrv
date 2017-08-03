@@ -1,23 +1,29 @@
 <settings>
     <category label="General">
         <setting label="Tumblr API OAuth https://api.tumblr.com/console/calls/user/info" type="lsep"/>
-        <setting id="consumer_key" label="Consumer KEY" values="5wEwFCF0rbiHXYZQQeQnNetuwZMmIyrUxIePLqUMcZlheVXwc4" enable="false" default="5wEwFCF0rbiHXYZQQeQnNetuwZMmIyrUxIePLqUMcZlheVXwc4" type="text" visible="true"/>
-        <setting id="consumer_secret" label="Consumer SECRET" values="GCLMI2LnMZqO2b5QheRvUSYY51Ujk7nWG2sYroqozW06x4hWch" default="GCLMI2LnMZqO2b5QheRvUSYY51Ujk7nWG2sYroqozW06x4hWch" type="text" enable="false" visible="true"/>
+        <setting default="5wEwFCF0rbiHXYZQQeQnNetuwZMmIyrUxIePLqUMcZlheVXwc4" enable="false" id="consumer_key"
+                 label="Consumer KEY" type="text" values="5wEwFCF0rbiHXYZQQeQnNetuwZMmIyrUxIePLqUMcZlheVXwc4"
+                 visible="true"/>
+        <setting default="GCLMI2LnMZqO2b5QheRvUSYY51Ujk7nWG2sYroqozW06x4hWch" enable="false" id="consumer_secret"
+                 label="Consumer SECRET" type="text" values="GCLMI2LnMZqO2b5QheRvUSYY51Ujk7nWG2sYroqozW06x4hWch"
+                 visible="true"/>
         <setting label="API Token and Secret from above Tumblr URL to authorize addon." type="lsep"/>
-        <setting id="oauth_token" label="OAUTH TOKEN" values="" default="" type="text" visible="true"/>
-        <setting id="oauth_secret" label="OAUTH SECRET" values="" default="" type="text" visible="true"/>
+        <setting default="" id="oauth_token" label="OAUTH TOKEN" type="text" values="" visible="true"/>
+        <setting default="" id="oauth_secret" label="OAUTH SECRET" type="text" values="" visible="true"/>
         <setting type="sep"/>
-        <setting id="lastsearch" label="Last Search" values="" default="" type="text" visible="true"/>
-        <setting id="downloadpath" label="Download Path" values="" default="" type="folder" visible="true"/>
-        <setting id="filtertext" label="Filter Text" values="" default="" type="text" visible="true"/>
-        <setting id="lastid" label="Last ID for Dashboard" values="" default="100000000000" type="text" visible="true"/>
-        <setting type="sep"/>
-        <setting id="viewmode" label="Set View $INFO[Container.Viewmode]" values="50" default="50" type="number"
+        <setting default="" id="lastsearch" label="Last Search" type="text" values="" visible="true"/>
+        <setting default="" id="downloadpath" label="Download Path" type="folder" values="" visible="true"/>
+        <setting default="" id="filtertext" label="Filter Text" type="text" values="" visible="true"/>
+        <setting label="ADVANCED DEBUG SETTINGS" type="lsep"/>
+        <setting default="100000000000" id="lastid" label="Last Post ID Loaded From Dashboard" type="text" values="" visible="true"/>
+        <setting default="100000000000" id="newid" label="Most Recent Post ID from your Dashboard" type="text" values=""
                  visible="true"/>
-        <setting id="viewmodethumb" label="Set Thumb View" values="0" default="0" type="number"
+        <setting default="0" id="idupdate" label="Timestamp of Last Check of New Tumblr Dashboard Posts" type="text" values="" visible="true"/>
+        <setting default="0" id="lastupdate" label="Timestamp of Last Download of Recent Posts on Blogs Your Following" type="text" values="" visible="true"/>
+        <setting default="50" id="viewmode" label="Set View $INFO[Container.Viewmode]" type="number" values="50"
                  visible="true"/>
-        <setting id="viewmodelist" label="Set List View" values="0" default="0" type="number"
-                 visible="true"/>
-        <setting id="debugon" label="DEBUG MODE ON" values="false" default="false" type="bool" visible="true"/>
+        <setting default="0" id="viewmodethumb" label="Set Thumb View" type="number" values="0" visible="true"/>
+        <setting default="0" id="viewmodelist" label="Set List View" type="number" values="0" visible="true"/>
+        <setting default="false" id="debugon" label="DEBUG MODE ON" type="bool" values="false" visible="true"/>
     </category>
 </settings>
