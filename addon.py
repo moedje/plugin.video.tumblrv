@@ -568,9 +568,10 @@ def refresh_following():
     #tstampnow = float(str(time.mktime((datetime.datetime.now()).timetuple())).split('.', 1)[0])
     #if tstampnow - float(lastupdated) > 600:
     #    needsupdate = True
-    if not shouldUpdate(checkFollowing=True):
-        allblogs = []
-        allblogs = json.load(fp=open(tagpath.replace("tagslist.json", "following.json"), mode='r'))
+    folpath = tagpath.replace("tagslist.json", "following.json")
+    allblogs = []
+    if os.path.exists(folpath): #shouldUpdate(checkFollowing=True):
+        allblogs = json.load(fp=open(folpath, mode='r'))
         return allblogs
     from operator import itemgetter
     litems = []
