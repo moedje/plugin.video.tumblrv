@@ -11,7 +11,7 @@ except:
 tclient = TumblrRestClient
 viewmode = 20
 APIOK = False
-plugin = Plugin(name="TumblrV", addon_id="plugin.video.tumblrv", plugin_file="plugin.py", info_type="episode")
+plugin = Plugin(name="TumblrV", addon_id="plugin.video.tumblrv", plugin_file="addon.py", info_type="video")
 __addondir__ = xbmc.translatePath(plugin.addon.getAddonInfo('path'))
 __resdir__ = os.path.join(__addondir__, 'resources')
 __imgdir__ = os.path.join(__resdir__, 'images')
@@ -35,7 +35,7 @@ def _json_object_hook(d):
 def json2obj(data):
     return json.loads(data, object_hook=_json_object_hook)
 
-def makeitem(name=None, img=None, path='blogposts', playable=False, **kwargs):
+def makeitem(name=None, img=None, path='blogposts', playable=False, kwargs={}):
     #if doDebug():
     xitem = None
     try:
@@ -88,29 +88,41 @@ def index():
     itemsearch = {}
     tstamp = str(time.mktime((datetime.datetime.now() - weekdelta).timetuple())).split('.', 1)[0]
     try:
-        itemdash = ListItem(label="Dashboard", path=plugin.url_for(dashboard, offset=0, lastid=0))
-        itemfollowing = ListItem(label="Following", path=plugin.url_for(blogs_following, offset=0))
-        itemliked = makeitem(name='Liked Videos', path=liked, offset=0)
-        litems.append(itemdash)
+        itemargs = {'offset': 0, 'lastid':0}
+        itemdashvids = makeitem(name='Dashboard Videos', img=__imgtumblr__,  path='dashboard', kwargs=itemargs)
+        itemargs = {'offset':0}
+        itemliked = makeitem(name='Liked Videos', path='liked', kwargs=itemargs)
+        itemfollowing = makeitem(name='Following', path='blogs_following', kwargs=itemargs)
+        itemargs = {'timestamp': str(tstamp)}
+        itemtagbrowse = makeitem(name='Browse Tags', path='taglist', kwargs=itemargs) #dict(timestamp=str(tstamp)))
+        itemargs.update({'tagname': 0})
+        itemtagged = makeitem(name='Search Tags', path='tags', kwargs=itemargs) #dict(tagname='0', timestamp=str(tstamp)))
+        litems.append(itemdashvids)
+        litems.append(itemliked)
         litems.append(itemfollowing)
-
-        #itemargs = {'offset': 0, 'lastid':0}
-        #itemdashvids = makeitem(name='Dashboard Videos', img=__imgtumblr__,  path='dashboard', kwargs=itemargs)
-        #itemargs = {'offset':0}
-        #itemliked = makeitem(name='Liked Videos', path='liked', kwargs=itemargs)
-        #itemfollowing = makeitem(name='Following', path='blogs_following', kwargs=itemargs)
-        #itemargs = {'timestamp': str(tstamp)}
-        #itemtagbrowse = makeitem(name='Browse Tags', path='taglist', kwargs=itemargs) #dict(timestamp=str(tstamp)))
-        #itemargs.update({'tagname': 0})
-
-        #litems.append(itemdash)
-        #litems.append(itemfollowing)
-        #litems.append(itemliked)
-        #litems.append(itemtagbrowse)
+        litems.append(itemtagbrowse)
+        litems.append(itemtagged)
     except Exception as ex:
         outmsg = "Error: {0}\n{1}\n{2}\n".format(str(ex), str(ex.message), str(ex.args))
         plugin.notify(msg=outmsg, delay=10000)
         print outmsg
+    '''
+    if not APIOK:
+        itemappkey = {
+            'label': "Consumer KEY:\n{0}".format(TUMBLRAUTH['consumer_key']),
+            'path': plugin.url_for(endpoint=setup)}
+        itemappsecret = {
+            'label': "Consumer SECRET:\n{0}".format(TUMBLRAUTH['consumer_secret']),
+            'path': plugin.url_for(endpoint=setup_get)
+        }
+        itemurl = {
+            'label': ur'https://api.tumblr.com/console/calls/user/info\n enter Key and Secret from this screen',
+            'path': plugin.url_for(endpoint=index)
+        }
+        litems.append(itemurl)
+        litems.append(itemappkey)
+        litems.append(itemappsecret)
+    '''
     return litems
 
 
@@ -446,8 +458,8 @@ def get_postids(ForceUpdate=False):
             latestid = apost.get('id', lastid)
         if latestid != lastid:
             tstampnow = float(str(time.mktime((datetime.datetime.now()).timetuple())).split('.', 1)[0])
-            plugin.set_sextting('newid', latestid)
-            plugin.set_setting('idupdate', str(tstampnow))
+            plugin.set_setting('newid', latestid)
+            plugin.set_setting('idupdate', tstampnow)
     else:
         latestid = plugin.get_setting('newid')
     return (latestid, lastid)
@@ -461,14 +473,15 @@ def shouldUpdate(checkDashboardId=True, checkFollowing=False):
             blogpath = tagpath.replace("tagslist.json", "following.json")
             if not os.path.exists(blogpath):
                 return True
-            lastupdated = plugin.get_setting('lastupdate', converter=str)
+            lastupdated = plugin.get_setting('lastupdate', converter=float)
         else:
-            lastupdated = plugin.get_setting('idupdate', converter=str)
+            lastupdated = plugin.get_setting('idupdate', converter=float)
         tstampnow = float(str(time.mktime((datetime.datetime.now()).timetuple())).split('.', 1)[0])
         if tstampnow - float(lastupdated) > 600:
             needsupdate = True
     except Exception as ex:
-        errmsg = "**Failed to check whether an update is required. Update requested for**\n  Dashboard Posts: {0} Posts from Followed Blogs: {1}\n** {2} **".format(str(repr(checkDashboardId)), str(repr(checkDashboardId)), str(repr(ex)))
+        errmsg = "**Failed to check whether an update is required. Update requested for**\nDashboard Posts\t{0}\tPosts from Followed Blogs: {1}\n!!**{2}**!!".format(
+            str(repr(checkDashboardId)), str(repr(checkDashboardId)), str(repr(ex)))
         plugin.log.error(msg=errmsg)
         needsupdate = True
     return needsupdate
@@ -506,7 +519,7 @@ def dashboard(lastid=0, offset=0):
         else:
             listlikes = results.get(results.keys()[-1])
     litems, alltags = dashboard_items(listlikes)
-    item = results[-1]
+    item = listlikes[-1]
     nextid = item.get('id', )
     plugin.set_setting('lastid', nextid)
     if nextid >= lastid - 20:
@@ -1000,7 +1013,7 @@ if __name__ == '__main__':
     plugin.log.info(msg=txtout)
     print (txtout)
     ctxlist = []
-    plugin.set_content(content='episodes')
+    plugin.set_content(content='movies')
     viewmodel = 51
     viewmodet = 500
     if str(plugin.request.path).startswith('/taglist/') or plugin.request.path == '/':

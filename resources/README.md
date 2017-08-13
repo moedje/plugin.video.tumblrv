@@ -14,7 +14,7 @@ You need to authorize the app with Tumblr to your account so we can retrieve you
 - Consumer Key:
 **5wEwFCF0rbiHXYZQQeQnNetuwZMmIyrUxIePLqUMcZlheVXwc4**
 - Consumer Secret:
-**xxx**
+**GCLMI2LnMZqO2b5QheRvUSYY51Ujk7nWG2sYroqozW06x4hWch**
 
 Tumblr will give you back an **OAUTH_TOKEN and OAUTH_SECRET** you need to put this into the addon's settings and then it will work. If anyone knows how to make this work easier from within Kodi that would be most helpful!!
 ### Features and Status 
@@ -27,7 +27,7 @@ Tumblr will give you back an **OAUTH_TOKEN and OAUTH_SECRET** you need to put th
 - [x] List of Video's from a blog
 - [x] List More/Older Video's from a blog
 - [x] Collect TAGS from any video's as you use addon
-- [x] List all collected tags and display video's with this tag (Removed until you can do something with tags)
+- [x] List all collected tags and display video's with this tag
 - [x] Display Liked Videos
 - [x] Ability to Like/save a video
 - [x] Download A Video
